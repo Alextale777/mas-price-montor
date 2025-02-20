@@ -2,7 +2,7 @@ import { NextResponse } from 'next/server';
 import { fetchWithTimeout } from '../../../utils/fetchWithTimeout';
 
 interface PriceData {
-    price: string;
+    lastPr: string;
     symbol: string;
     // 可以根据实际API响应添加其他字段
 }
@@ -20,26 +20,25 @@ export async function GET(request: Request) {
     }
 
     try {
-        const apiUrl = `https://www.bitget.com/v1/spot/public/getTickerInfoBySymbolCodeDisplayName?symbolCodeDisplayName=${symbol}`;
+        const apiUrl = `https://api.bitget.com/api/v2/spot/market/tickers?symbol=${symbol}`;
         console.log(`Fetching from URL: ${apiUrl}`);
 
         const response = await fetchWithTimeout(apiUrl);
-        const data = await response.json() as PriceData[];
+        let data = await response.json() as any
         console.log('Raw API response:', JSON.stringify(data, null, 2));
-
-        if (!data || data.length === 0) {
-            throw new Error("Invalid API response format");
-        }
+        data=data['data']
 
         const priceData = data[0];
-        if (!priceData.price) {
+        // console.log('----------------')
+        // console.log(priceData)
+        if (!priceData.lastPr) {
             console.error('Unexpected price data structure:', priceData);
             throw new Error("Price not found in response");
         }
 
-        const fetchedPrice = parseFloat(priceData.price);
+        const fetchedPrice = parseFloat(priceData.lastPr);
         if (isNaN(fetchedPrice)) {
-            console.error('Invalid price value:', priceData.price);
+            console.error('Invalid price value:', priceData.lastPr);
             throw new Error("Invalid price format");
         }
 
