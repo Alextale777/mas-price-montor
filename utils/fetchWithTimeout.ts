@@ -9,7 +9,6 @@ export async function fetchWithTimeout(
     retryCount = 2, // 默认重试2次
     timeoutMultiplier = 1.5 // 每次重试增加50%超时时间
   ): Promise<Response> {
-    const proxyAgent = new HttpsProxyAgent('http://127.0.0.1:1089');
 
     for (let attempt = 0; attempt <= retryCount; attempt++) {
       const currentTimeout = timeout * Math.pow(timeoutMultiplier, attempt);
@@ -44,7 +43,6 @@ export async function fetchWithTimeout(
           ...options,
           headers: defaultHeaders,
           signal,
-          agent: proxyAgent, // 现在类型正确了
         });
         
         const response = await Promise.race([fetchPromise, timeoutPromise]);
