@@ -7,25 +7,30 @@ import { getLatestPrice } from "./api/priceLatest"; // 新增导入
 
 export default function Home() {
   const [balance, setBalance] = useState<string>("--");
+  const [rolls, setRolls] = useState<string>("--");
   const [profit, setProfit] = useState<string>("--");
   const [cycleStats, setCycleStats] = useState<any>(null);
   const [remainingTimeInSeconds, setRemainingTimeInSeconds] = useState<number>(0);
   const [latestPrice, setLatestPrice] = useState<string>("--"); // 新增状态
   const [usdProfit, setUsdProfit] = useState<string>("--");
   const baseBalance = 38.16254;
+  const baseRolls = 68;
 
   useEffect(() => {
     document.title = "MAS Price Monitor";
 
     async function fetchBalance() {
       try {
-        const newBalance = await getBalance();
+        const {balance, rolls }= await getBalance();
+        const newBalance = balance;
+        const newRolls = Number(rolls);
         const numericBalance = Number(newBalance);
         if (isNaN(numericBalance)) {
           throw new Error("Invalid balance value");
         }
         setBalance(numericBalance.toFixed(5));
-        const calculatedProfit = numericBalance - baseBalance;
+        setRolls(newRolls.toFixed(5));
+        const calculatedProfit = numericBalance - baseBalance + (newRolls - baseRolls) * 100;
         setProfit(calculatedProfit.toFixed(5));
       } catch (error) {
         console.error("Error fetching balance:", error);
@@ -88,7 +93,7 @@ export default function Home() {
     <div className="min-h-screen p-8 pb-20 sm:p-20 font-sans">
       <main className="max-w-7xl mx-auto flex flex-col gap-8">
         {/* 第一行卡片 */}
-        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 w-full">
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-5 gap-4 w-full">
           <div className="bg-white dark:bg-gray-800 p-6 rounded-lg shadow-md flex flex-col justify-between min-h-[160px]">
             <h2 className="text-xl font-bold">Mas Balance</h2>
             <p className="text-2xl font-mono mt-auto">
@@ -98,6 +103,12 @@ export default function Home() {
           <div className="bg-white dark:bg-gray-800 p-6 rounded-lg shadow-md flex flex-col justify-between min-h-[160px]">
             <h2 className="text-xl font-bold">Base Balance</h2>
             <p className="text-2xl font-mono mt-auto">{baseBalance.toFixed(5)}</p>
+          </div>
+          <div className="bg-white dark:bg-gray-800 p-6 rounded-lg shadow-md flex flex-col justify-between min-h-[160px]">
+            <h2 className="text-xl font-bold">Rolls</h2>
+            <p className="text-2xl font-mono mt-auto">
+              {rolls === "--" ? "Loading..." : rolls}
+            </p>
           </div>
           <div className="bg-white dark:bg-gray-800 p-6 rounded-lg shadow-md flex flex-col justify-between min-h-[160px]">
             <h2 className="text-xl font-bold">Profit</h2>
